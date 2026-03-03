@@ -14,12 +14,12 @@
             --dark: #1a1a1a;
         }
         
-        /* BLOQUEO TOTAL DE DESBORDE */
         html, body {
             max-width: 100%;
             overflow-x: hidden;
             position: relative;
             width: 100%;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -37,17 +37,26 @@
             text-transform: uppercase;
         }
 
-        /* SOMBRAS RADICALES (VOLVIENDO AL ESTILO ORIGINAL) */
         .brutal-card {
             background: white;
             border: 4px solid var(--dark);
-            box-shadow: 10px 10px 0px var(--dark); /* Sombra pesada devuelta */
+            box-shadow: 10px 10px 0px var(--dark);
             transition: all 0.2s ease;
         }
         
         .brutal-card:hover {
             transform: translate(-4px, -4px);
             box-shadow: 14px 14px 0px var(--blue);
+        }
+
+        /* Estilo para el carrito lateral */
+        #cart-drawer {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 8px solid var(--dark);
+        }
+        #cart-drawer.open {
+            transform: translateX(0);
         }
 
         .marquee-container {
@@ -85,8 +94,31 @@
 </head>
 <body class="selection:bg-yellow-400 selection:text-black">
 
-    <!-- Botón Flotante -->
-    <button onclick="spawnTreats()" class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white w-16 h-16 rounded-full font-bold brutal-card hover:bg-yellow-400 hover:text-black transition-colors flex items-center justify-center text-2xl active:scale-95 shadow-2xl">
+    <!-- Carrito Lateral (Drawer) -->
+    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full md:w-[400px] bg-[#fdfdf5] z-[100] p-6 flex flex-col shadow-[-20px_0px_0px_rgba(0,0,0,0.1)]">
+        <div class="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
+            <h2 class="font-huge text-3xl">TU PACK</h2>
+            <button onclick="toggleCart()" class="bg-black text-white p-2 border-2 border-black hover:bg-yellow-400 hover:text-black transition-colors font-bold">CERRAR</button>
+        </div>
+        
+        <div id="cart-items" class="flex-grow overflow-y-auto space-y-4 pr-2">
+            <!-- Los items se cargarán aquí -->
+            <p class="text-center font-bold text-gray-400 mt-10 italic">El carrito está vacío. ¡Dale premios a tu perro! 🐶</p>
+        </div>
+
+        <div class="border-t-4 border-black pt-6 mt-4">
+            <div class="flex justify-between items-center mb-6">
+                <span class="font-huge text-2xl">TOTAL</span>
+                <span id="cart-total" class="font-huge text-4xl text-blue-600">$0</span>
+            </div>
+            <button onclick="sendWhatsAppOrder()" class="w-full bg-green-500 text-black font-huge text-xl py-4 border-4 border-black shadow-[6px_6px_0px_black] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                PEDIR POR WHATSAPP 📲
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón Flotante Premios -->
+    <button onclick="spawnTreats()" class="fixed bottom-6 left-6 z-50 bg-blue-600 text-white w-16 h-16 rounded-full font-bold brutal-card hover:bg-yellow-400 hover:text-black transition-colors flex items-center justify-center text-2xl active:scale-95 shadow-2xl">
         🦴
     </button>
 
@@ -98,10 +130,15 @@
             </div>
             <span class="font-huge text-2xl md:text-4xl tracking-tighter">PET-IT</span>
         </div>
-        <a href="#productos" class="bg-black text-white px-4 py-2 border-4 border-black font-bold uppercase hover:bg-yellow-400 hover:text-black transition-all shadow-[4px_4px_0px_rgba(0,0,0,1)] text-xs md:text-base">Comprar</a>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleCart()" class="relative bg-yellow-400 p-2 border-2 border-black hover:scale-110 transition-transform">
+                🛒 <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-black">0</span>
+            </button>
+            <a href="#productos" class="bg-black text-white px-4 py-2 border-4 border-black font-bold uppercase hover:bg-yellow-400 hover:text-black transition-all shadow-[4px_4px_0px_rgba(0,0,0,1)] text-xs md:text-base">Packs</a>
+        </div>
     </nav>
 
-    <!-- Hero Section RADICAL -->
+    <!-- Hero Section -->
     <section class="relative min-h-[90vh] flex flex-col justify-center items-center text-center p-4 overflow-hidden w-full">
         <h1 class="font-huge text-6xl sm:text-8xl md:text-9xl lg:text-[11rem] mb-6 z-10 leading-none tracking-tighter">
             SOLO <span class="bg-yellow-400 px-4 border-4 border-black shadow-[12px_12px_0px_black] inline-block mb-4 md:mb-0">CARNE</span><br>
@@ -114,7 +151,6 @@
             </p>
         </div>
 
-        <!-- Logo Principal -->
         <div class="mt-12 group cursor-pointer" onclick="this.classList.toggle('rotate-12')">
             <div class="w-56 h-56 md:w-80 md:h-80 border-8 border-black flex items-center justify-center bg-black group-hover:border-yellow-400 transition-all overflow-hidden shadow-[15px_15px_0px_var(--blue)]">
                 <img src="PET-IT.png" alt="PET-IT Logo Oficial" class="w-full h-full object-contain p-4 md:p-6" onerror="this.parentElement.innerHTML='<span class=\'font-huge text-white text-5xl\'>PET-IT</span>'">
@@ -152,20 +188,28 @@
         </div>
     </section>
 
-    <!-- Productos -->
+    <!-- Productos con Carrito -->
     <section id="productos" class="py-24 bg-blue-600 text-white border-y-8 border-black w-full">
         <div class="max-w-5xl mx-auto px-6 text-center">
             <h2 class="font-huge text-5xl md:text-8xl mb-12 tracking-tighter">ELIGE TU ARMA</h2>
             <div class="flex flex-col md:flex-row gap-10 justify-center items-stretch">
+                <!-- Producto 1 -->
                 <div class="bg-white text-black p-10 border-4 border-black shadow-[15px_15px_0px_#000] flex-1">
                     <h4 class="font-huge text-3xl mb-4">HÍGADO DESHIDRATADO</h4>
-                    <p class="font-bold mb-6 italic text-blue-600">Poder Puro 100g</p>
-                    <button class="w-full py-4 bg-black text-white font-bold hover:bg-yellow-400 hover:text-black transition-colors border-2 border-black">AGREGAR</button>
+                    <p class="font-bold mb-2 italic text-blue-600 uppercase">Poder Puro 100g</p>
+                    <p class="text-4xl font-huge mb-6">$120</p>
+                    <button onclick="addToCart('Hígado Deshidratado', 120)" class="w-full py-4 bg-black text-white font-bold hover:bg-yellow-400 hover:text-black transition-colors border-2 border-black uppercase">
+                        Agregar al pack
+                    </button>
                 </div>
+                <!-- Producto 2 -->
                 <div class="bg-white text-black p-10 border-4 border-black shadow-[15px_15px_0px_#000] flex-1">
                     <h4 class="font-huge text-3xl mb-4">CORAZÓN DE RES</h4>
-                    <p class="font-bold mb-6 italic text-blue-600">Energía Radical 100g</p>
-                    <button class="w-full py-4 bg-black text-white font-bold hover:bg-yellow-400 hover:text-black transition-colors border-2 border-black">AGREGAR</button>
+                    <p class="font-bold mb-2 italic text-blue-600 uppercase">Energía Radical 100g</p>
+                    <p class="text-4xl font-huge mb-6">$140</p>
+                    <button onclick="addToCart('Corazón de Res', 140)" class="w-full py-4 bg-black text-white font-bold hover:bg-yellow-400 hover:text-black transition-colors border-2 border-black uppercase">
+                        Agregar al pack
+                    </button>
                 </div>
             </div>
         </div>
@@ -175,10 +219,92 @@
     <footer class="p-12 text-center bg-yellow-400 border-t-8 border-black w-full">
         <img src="PET-IT.png" alt="Logo" class="h-20 w-20 mx-auto mb-6 border-4 border-black bg-black p-1" onerror="this.style.display='none'">
         <p class="font-huge text-4xl">PET-IT TREATS</p>
-        <p class="font-bold text-sm mt-6 opacity-70">© 2026 - HECHO PARA PERROS QUE NO SIGUEN LAS REGLAS.</p>
+        <p class="font-bold text-sm mt-6 opacity-70 italic uppercase">© 2026 - Hecho para perros que no siguen las reglas.</p>
     </footer>
 
     <script>
+        // ESTADO DEL CARRITO
+        let cart = [];
+
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('open');
+        }
+
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ name, price, qty: 1 });
+            }
+            updateCartUI();
+            
+            // Si es la primera vez que agrega, abrimos el carrito para mostrar el progreso
+            if(!document.getElementById('cart-drawer').classList.contains('open')) {
+                toggleCart();
+            }
+            spawnTreats(); // ¡Animación de premio al agregar!
+        }
+
+        function removeFromCart(name) {
+            cart = cart.filter(item => item.name !== name);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            const countLabel = document.getElementById('cart-count');
+            const totalLabel = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center font-bold text-gray-400 mt-10 italic">El carrito está vacío. ¡Dale premios a tu perro! 🐶</p>`;
+                countLabel.innerText = '0';
+                totalLabel.innerText = '$0';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+            let totalQty = 0;
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                totalQty += item.qty;
+                html += `
+                    <div class="brutal-card p-4 flex justify-between items-center bg-white">
+                        <div>
+                            <p class="font-bold text-lg uppercase">${item.name}</p>
+                            <p class="text-sm font-bold text-blue-600">${item.qty} x $${item.price}</p>
+                        </div>
+                        <button onclick="removeFromCart('${item.name}')" class="text-red-500 font-bold hover:scale-125 transition">✖</button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            countLabel.innerText = totalQty;
+            totalLabel.innerText = `$${total}`;
+        }
+
+        function sendWhatsAppOrder() {
+            if (cart.length === 0) return;
+
+            const phone = "521234567890"; // <--- AQUÍ PON TU NÚMERO DE WHATSAPP REAL (con código de país)
+            let message = "¡Hola PET-IT! 🐶%0AQuiero armar mi pack con lo siguiente:%0A%0A";
+            
+            let total = 0;
+            cart.forEach(item => {
+                message += `• ${item.qty} x ${item.name} ($${item.price * item.qty})%0A`;
+                total += item.price * item.qty;
+            });
+
+            message += `%0ATotal del pedido: *$${total}*%0A%0A¿Cómo realizo el pago? 🥩🔥`;
+            
+            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        }
+
+        // Animación de premios
         function spawnTreats() {
             const emojis = ['🦴', '🥩', '🍖', '🐶', '🔥', '👅'];
             const count = window.innerWidth < 768 ? 10 : 20; 
